@@ -8,16 +8,18 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
         .input-form {
             display: flex;
+            flex-wrap: wrap;
             gap: 20px;
         }
         .form-column {
             flex: 1;
+            min-width: 250px;
         }
         label {
             display: block;
@@ -43,66 +45,29 @@
 </head>
 <body>
     <h1>OpenShift構成比較ツール</h1>
-    <div class="input-form">
-        <div class="form-column">
-            <h2>構成1</h2>
-            <label for="workers1">冗長化のための最低必要Worker台数:</label>
-            <input type="number" id="workers1" min="1" value="3">
-            
-            <label for="vcpu1">アプリのための最低必要vCPU数:</label>
-            <input type="number" id="vcpu1" min="1" value="16">
-            
-            <label for="vsphere_price1">vSphereのコア単価:</label>
-            <input type="number" id="vsphere_price1" min="0" value="1000">
-            
-            <label for="vopenshift_price1">仮想OpenShiftのコア単価:</label>
-            <input type="number" id="vopenshift_price1" min="0" value="2000">
-            
-            <label for="bopenshift_price1">ベアメタルOpenShiftのマシン単価:</label>
-            <input type="number" id="bopenshift_price1" min="0" value="100000">
-            
-            <label for="machine_price1">マシンの利用料コア単価:</label>
-            <input type="number" id="machine_price1" min="0" value="500">
-            
-            <label for="discount1">OpenShift単価の割引率 (%):</label>
-            <input type="number" id="discount1" min="0" max="100" value="0">
-            
-            <label for="config1">構成:</label>
-            <select id="config1">
-                <option value="virtual">vSphere+仮想OpenShift</option>
-                <option value="baremetal">ベアメタル</option>
-            </select>
-        </div>
-        <div class="form-column">
-            <h2>構成2</h2>
-            <label for="workers2">冗長化のための最低必要Worker台数:</label>
-            <input type="number" id="workers2" min="1" value="3">
-            
-            <label for="vcpu2">アプリのための最低必要vCPU数:</label>
-            <input type="number" id="vcpu2" min="1" value="16">
-            
-            <label for="vsphere_price2">vSphereのコア単価:</label>
-            <input type="number" id="vsphere_price2" min="0" value="1000">
-            
-            <label for="vopenshift_price2">仮想OpenShiftのコア単価:</label>
-            <input type="number" id="vopenshift_price2" min="0" value="2000">
-            
-            <label for="bopenshift_price2">ベアメタルOpenShiftのマシン単価:</label>
-            <input type="number" id="bopenshift_price2" min="0" value="100000">
-            
-            <label for="machine_price2">マシンの利用料コア単価:</label>
-            <input type="number" id="machine_price2" min="0" value="500">
-            
-            <label for="discount2">OpenShift単価の割引率 (%):</label>
-            <input type="number" id="discount2" min="0" max="100" value="0">
-            
-            <label for="config2">構成:</label>
-            <select id="config2">
-                <option value="virtual">vSphere+仮想OpenShift</option>
-                <option value="baremetal">ベアメタル</option>
-            </select>
-        </div>
+    
+    <div class="form-column">
+        <h2>共通設定</h2>
+        <label for="vsphere_price">vSphereのコア単価:</label>
+        <input type="number" id="vsphere_price" min="0" value="1000">
+        
+        <label for="vopenshift_price">仮想OpenShiftのコア単価:</label>
+        <input type="number" id="vopenshift_price" min="0" value="2000">
+        
+        <label for="bopenshift_price">ベアメタルOpenShiftのマシン単価:</label>
+        <input type="number" id="bopenshift_price" min="0" value="100000">
+        
+        <label for="machine_price">マシンの利用料コア単価:</label>
+        <input type="number" id="machine_price" min="0" value="500">
+        
+        <label for="comparison_count">比較数:</label>
+        <input type="number" id="comparison_count" min="1" max="4" value="1" onchange="updateForms()">
     </div>
+
+    <div id="input-forms" class="input-form">
+        <!-- 動的にフォームが追加されます -->
+    </div>
+
     <button onclick="calculate()">計算</button>
     <div id="result">
         <canvas id="chart"></canvas>
@@ -112,20 +77,57 @@
         const CORES_PER_MACHINE = 64;
         let chart = null;
 
+        function updateForms() {
+            const count = parseInt(document.getElementById('comparison_count').value);
+            const container = document.getElementById('input-forms');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                container.appendChild(createForm(i));
+            }
+        }
+
+        function createForm(index) {
+            const div = document.createElement('div');
+            div.className = 'form-column';
+            div.innerHTML = `
+                <h2>構成${index}</h2>
+                <label for="workers${index}">冗長化のための最低必要Worker台数:</label>
+                <input type="number" id="workers${index}" min="1" value="3">
+                
+                <label for="vcpu${index}">アプリのための最低必要vCPU数:</label>
+                <input type="number" id="vcpu${index}" min="1" value="16">
+                
+                <label for="discount${index}">OpenShift単価の割引率 (%):</label>
+                <input type="number" id="discount${index}" min="0" max="100" value="0">
+                
+                <label for="config${index}">構成:</label>
+                <select id="config${index}">
+                    <option value="virtual">vSphere+仮想OpenShift</option>
+                    <option value="baremetal">ベアメタル</option>
+                </select>
+            `;
+            return div;
+        }
+
         function calculate() {
-            const result1 = calculateLicense(1);
-            const result2 = calculateLicense(2);
+            const count = parseInt(document.getElementById('comparison_count').value);
+            const results = [];
+
+            for (let i = 1; i <= count; i++) {
+                results.push(calculateLicense(i));
+            }
             
-            displayResults(result1, result2);
+            displayResults(results);
         }
 
         function calculateLicense(formNumber) {
             const workers = parseInt(document.getElementById(`workers${formNumber}`).value);
             const vcpu = parseInt(document.getElementById(`vcpu${formNumber}`).value);
-            const vspherePrice = parseFloat(document.getElementById(`vsphere_price${formNumber}`).value);
-            const vopenshiftPrice = parseFloat(document.getElementById(`vopenshift_price${formNumber}`).value);
-            const bopenshiftPrice = parseFloat(document.getElementById(`bopenshift_price${formNumber}`).value);
-            const machinePrice = parseFloat(document.getElementById(`machine_price${formNumber}`).value);
+            const vspherePrice = parseFloat(document.getElementById('vsphere_price').value);
+            const vopenshiftPrice = parseFloat(document.getElementById('vopenshift_price').value);
+            const bopenshiftPrice = parseFloat(document.getElementById('bopenshift_price').value);
+            const machinePrice = parseFloat(document.getElementById('machine_price').value);
             const discount = parseFloat(document.getElementById(`discount${formNumber}`).value) / 100;
             const config = document.getElementById(`config${formNumber}`).value;
 
@@ -155,40 +157,38 @@
             };
         }
 
-        function displayResults(result1, result2) {
+        function displayResults(results) {
             if (chart) {
                 chart.destroy();
             }
 
             const ctx = document.getElementById('chart').getContext('2d');
+            const labels = results.map((_, index) => `構成${index + 1}`);
+            const datasets = [
+                {
+                    label: 'vSphere',
+                    data: results.map(r => r.vsphereCost),
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                },
+                {
+                    label: 'OpenShift',
+                    data: results.map(r => r.openshiftCost),
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                },
+                {
+                    label: 'マシン利用料',
+                    data: results.map(r => r.machineCost),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                }
+            ];
+
             chart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: ['構成1', '構成2'],
-                    datasets: [
-                        {
-                            label: 'vSphere',
-                            data: [result1.vsphereCost, result2.vsphereCost],
-                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                        },
-                        {
-                            label: 'OpenShift',
-                            data: [result1.openshiftCost, result2.openshiftCost],
-                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        },
-                        {
-                            label: 'マシン利用料',
-                            data: [result1.machineCost, result2.machineCost],
-                            backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                        }
-                    ]
-                },
+                data: { labels, datasets },
                 options: {
                     responsive: true,
                     scales: {
-                        x: {
-                            stacked: true,
-                        },
+                        x: { stacked: true },
                         y: {
                             stacked: true,
                             beginAtZero: true,
@@ -215,6 +215,9 @@
                 }
             });
         }
+
+        // 初期フォームの生成
+        updateForms();
     </script>
 </body>
 </html>
