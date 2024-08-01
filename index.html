@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ライセンス料計算</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>ライセンス料計算フォーム</h1>
+    <form id="licenseForm">
+        <label for="worker_min_count">冗長化のための最低必要Worker台数:</label><br>
+        <input type="number" id="worker_min_count" name="worker_min_count" required><br><br>
+        
+        <label for="vcpu_min_count">アプリのための最低必要vCPU数:</label><br>
+        <input type="number" id="vcpu_min_count" name="vcpu_min_count" required><br><br>
+        
+        <label for="vsphere_core_cost">vsphereのコア単価:</label><br>
+        <input type="number" step="0.01" id="vsphere_core_cost" name="vsphere_core_cost" required><br><br>
+        
+        <label for="virtual_openshift_core_cost">仮想openshiftのコア単価:</label><br>
+        <input type="number" step="0.01" id="virtual_openshift_core_cost" name="virtual_openshift_core_cost" required><br><br>
+        
+        <label for="baremetal_openshift_machine_cost">ベアメタルopenshiftのマシン単価:</label><br>
+        <input type="number" step="0.01" id="baremetal_openshift_machine_cost" name="baremetal_openshift_machine_cost" required><br><br>
+        
+        <label for="machine_core_cost">マシンの利用料コア単価:</label><br>
+        <input type="number" step="0.01" id="machine_core_cost" name="machine_core_cost" required><br><br>
+        
+        <label for="openshift_discount_rate">openshift単価の割引率:</label><br>
+        <input type="number" step="0.01" id="openshift_discount_rate" name="openshift_discount_rate" required><br><br>
+        
+        <label for="configuration">構成:</label><br>
+        <select id="configuration" name="configuration" required>
+            <option value="vsphere+仮想openshift">vsphere+仮想openshift</option>
+            <option value="ベアメタル">ベアメタル</option>
+        </select><br><br>
+        
+        <button type="button" onclick="calculateLicenseCost()">計算</button>
+    </form>
+
+    <h1>ライセンス料計算結果</h1>
+    <p id="result">必要なライセンス料: <span id="license_cost">0</span> 円</p>
+
+    <h2>入力値</h2>
+    <ul id="input_values"></ul>
+
+    <h2>ライセンス料の内訳</h2>
+    <canvas id="costChart" width="400" height="200"></canvas>
+
+    <script>
+        function calculateLicenseCost() {
+            const workerMinCount = parseInt(document.getElementById('worker_min_count').value);
+            const vcpuMinCount = parseInt(document.getElementById('vcpu_min_count').value);
+            const vsphereCoreCost = parseFloat(document.getElementById('vsphere_core_cost').value);
+            const virtualOpenshiftCoreCost = parseFloat(document.getElementById('virtual_openshift_core_cost').value);
+            const baremetalOpenshiftMachineCost = parseFloat(document.getElementById('baremetal_openshift_machine_cost').value);
+            const machineCoreCost = parseFloat(document.getElementById('machine_core_cost').value);
+            const coresPerMachine = 64;  // 固定値
+            const openshiftDiscountRate = parseFloat(document.getElementById('openshift_discount_rate').value);
+            const configuration = document.getElementById('configuration').value;
+
+            let licenseCost = 0;
+            const costDetails = {};
+
+            if (configuration === 'vsphere+仮想openshift') {
+                const totalVcpuCost = vcpuMinCount * vsphereCoreCost;
+                const totalOpenshiftCost = vcpuMinCount * virtualOpenshiftCoreCost * (1 - openshiftDiscountRate);
+                licenseCost = totalVcpuCost + totalOpenshiftCost;
+
+                costDetails['vsphere'] = totalVcpuCost;
+                costDetails['virtual_openshift'] = totalOpenshiftCost;
+            } else if (configuration === 'ベアメタル') {
+                const totalMachines = Math.max(workerMinCount, Math.ceil(vcpuMinCount / coresPerMachine));
+                const totalMachineCost = totalMachines * baremetalOpenshiftMachineCost;
+                const totalOpenshiftCoreCost = vcpuMinCount * machineCoreCost * (1 - openshiftDiscountRate);
+                licenseCost = totalMachineCost + totalOpenshiftCoreCost;
+
+                costDetails['baremetal_machine'] = totalMachineCost;
+                costDetails['baremetal_openshift_core'] = totalOpenshiftCoreCost;
+            }
+
+            document.getElementById('license_cost').innerText = licenseCost.toFixed(2);
+
+            const inputValues = `
+                <li>冗長化のための最低必要Worker台数: ${workerMinCount}</li>
+                <li>アプリのための最低必要vCPU数: ${vcpuMinCount}</li>
+                <li>vsphereのコア単価: ${vsphereCoreCost}</li>
+                <li>仮想openshiftのコア単価: ${virtualOpenshiftCoreCost}</li>
+                <li>ベアメタルopenshiftのマシン単価: ${baremetalOpenshiftMachineCost}</li>
+                <li>マシンの利用料コア単価: ${machineCoreCost}</li>
+                <li>openshift単価の割引率: ${openshiftDiscountRate}</li>
+                <li>構成: ${configuration}</li>
+            `;
+            document.getElementById('input_values').innerHTML = inputValues;
+
+            const ctx = document.getElementById('costChart').getContext('2d');
+            const costData = {
+                labels: Object.keys(costDetails),
+                datasets: [{
+                    label: 'ライセンス料',
+                    data: Object.values(costDetails),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: costData,
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
