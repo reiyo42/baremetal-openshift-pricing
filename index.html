@@ -101,6 +101,17 @@
                         </div>
                     </div>
                 </div>
+                                
+                <div class="form-group">
+                    <label for="machine_core_count">マシンあたりのコア数:</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" id="machine_core_count" min="1" max="64" value="64">
+                        <div class="number-input-buttons">
+                            <div class="number-input-button" onclick="changeNumber('machine_core_count', 1)">+</div>
+                            <div class="number-input-button" onclick="changeNumber('machine_core_count', -1)">-</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
