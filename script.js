@@ -1,14 +1,27 @@
-const CORES_PER_MACHINE = 64; // 1台のマシンあたりのコア数
-
+const CORES_PER_MACHINE = 64;
 let chart = null;
+
+function initializePage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const comparisonCount = urlParams.get('count') || 1;
+    document.getElementById('comparison_count').value = comparisonCount;
+    updateForms();
+    setValuesFromQuery(urlParams);
+}
 
 function updateForms() {
     const count = parseInt(document.getElementById('comparison_count').value);
     const container = document.getElementById('input-forms');
-    container.innerHTML = '';
+    const currentForms = container.children.length;
 
-    for (let i = 1; i <= count; i++) {
-        container.appendChild(createForm(i));
+    if (count > currentForms) {
+        for (let i = currentForms + 1; i <= count; i++) {
+            container.appendChild(createForm(i));
+        }
+    } else if (count < currentForms) {
+        for (let i = currentForms; i > count; i--) {
+            container.removeChild(container.lastChild);
+        }
     }
 }
 
@@ -49,6 +62,67 @@ function createForm(index) {
         </div>
     `;
     return div;
+}
+
+function setValuesFromQuery(urlParams) {
+    for (const [key, value] of urlParams.entries()) {
+        const element = document.getElementById(key);
+        if (element) {
+            element.value = value;
+        }
+    }
+}
+
+function generateShareURL() {
+    const url = new URL(window.location.href.split('?')[0]);
+    const params = new URLSearchParams();
+
+    // 共通設定
+    params.append('count', document.getElementById('comparison_count').value);
+    params.append('vsphere_price', document.getElementById('vsphere_price').value);
+    params.append('vopenshift_price_premium', document.getElementById('vopenshift_price_premium').value);
+    params.append('vopenshift_price_standard', document.getElementById('vopenshift_price_standard').value);
+    params.append('bopenshift_price_premium', document.getElementById('bopenshift_price_premium').value);
+    params.append('bopenshift_price_standard', document.getElementById('bopenshift_price_standard').value);
+    params.append('machine_price', document.getElementById('machine_price').value);
+
+    // 各構成の設定
+    const count = parseInt(document.getElementById('comparison_count').value);
+    for (let i = 1; i <= count; i++) {
+        params.append(`workers${i}`, document.getElementById(`workers${i}`).value);
+        params.append(`vcpu${i}`, document.getElementById(`vcpu${i}`).value);
+        params.append(`discount${i}`, document.getElementById(`discount${i}`).value);
+        params.append(`config${i}`, document.getElementById(`config${i}`).value);
+        params.append(`license${i}`, document.getElementById(`license${i}`).value);
+    }
+
+    url.search = params.toString();
+    showSharePopup(url.toString());
+}
+
+function showSharePopup(url) {
+    const popup = document.createElement('div');
+    popup.className = 'share-popup';
+    popup.innerHTML = `
+        <h3>共有用URL</h3>
+        <input type="text" value="${url}" readonly>
+        <button onclick="copyToClipboard('${url}')">コピー</button>
+        <button onclick="closeSharePopup()">閉じる</button>
+    `;
+    document.body.appendChild(popup);
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('URLがクリップボードにコピーされました。');
+    });
+}
+
+function closeSharePopup() {
+    const popup = document.querySelector('.share-popup');
+    if (popup) {
+        document.body.removeChild(popup);
+    }
 }
 
 function calculate() {
