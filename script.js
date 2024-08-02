@@ -251,5 +251,5 @@ function displayResults(results) {
     });
 }
 
-// 初期フォームの生成
-updateForms();
+// ページ読み込み時に初期化
+window.onload = initializePage;
