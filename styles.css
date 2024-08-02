@@ -128,3 +128,69 @@ input, select {
 .btn-share:hover {
     background-color: #2980b9;
 }
+
+.accordion-header {
+    cursor: pointer;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.accordion-content {
+    display: none;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input[type="number"] {
+    width: calc(100% - 30px); /* 幅を少し狭くして、ボタンのスペースを確保 */
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px; /* 右側の角を四角に */
+    font-size: 16px;
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.number-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.number-input-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 30px;
+}
+
+.number-input-button {
+    flex: 1;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    user-select: none;
+}
+
+.number-input-button:first-child {
+    border-radius: 0 4px 0 0;
+}
+
+.number-input-button:last-child {
+    border-radius: 0 0 4px 0;
+}
+
+.number-input-button:hover {
+    background-color: #e0e0e0;
+}
