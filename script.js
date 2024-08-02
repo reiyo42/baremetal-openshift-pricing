@@ -58,6 +58,7 @@ function createForm(index) {
             <select id="license${index}">
                 <option value="premium">Premium</option>
                 <option value="standard">Standard</option>
+                <option value="ccsp">CCSP</option>
             </select>
         </div>
     `;
@@ -125,6 +126,11 @@ function closeSharePopup() {
     }
 }
 
+function toggleAccordion(id) {
+    const content = document.getElementById(id);
+    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+}
+
 function calculate() {
     const count = parseInt(document.getElementById('comparison_count').value);
     const results = [];
@@ -137,14 +143,15 @@ function calculate() {
 }
 
 function calculateLicense(formNumber) {
-    // 入力値の取得
     const workers = parseInt(document.getElementById(`workers${formNumber}`).value);
     const vcpu = parseInt(document.getElementById(`vcpu${formNumber}`).value);
     const vspherePrice = parseFloat(document.getElementById('vsphere_price').value);
     const vopenshiftPricePremium = parseFloat(document.getElementById('vopenshift_price_premium').value);
     const vopenshiftPriceStandard = parseFloat(document.getElementById('vopenshift_price_standard').value);
+    const vopenshiftPriceCCSP = parseFloat(document.getElementById('vopenshift_price_ccsp').value);
     const bopenshiftPricePremium = parseFloat(document.getElementById('bopenshift_price_premium').value);
     const bopenshiftPriceStandard = parseFloat(document.getElementById('bopenshift_price_standard').value);
+    const bopenshiftPriceCCSP = parseFloat(document.getElementById('bopenshift_price_ccsp').value);
     const machinePrice = parseFloat(document.getElementById('machine_price').value);
     const discount = parseFloat(document.getElementById(`discount${formNumber}`).value) / 100;
     const config = document.getElementById(`config${formNumber}`).value;
@@ -155,31 +162,40 @@ function calculateLicense(formNumber) {
     let machineCost = 0;
 
     if (config === 'virtual') {
-        // 仮想環境の場合
-        // コア数は必要vCPU数のみを参照
         const cores = vcpu;
-        
-        // vSphereのコスト計算
         vsphereCost = cores * vspherePrice;
         
-        // OpenShiftのコスト計算（Premiumか Standardかで単価が異なる）
-        openshiftCost = cores * (license === 'premium' ? vopenshiftPricePremium : vopenshiftPriceStandard) * (1 - discount);
+        switch(license) {
+            case 'premium':
+                openshiftCost = cores * vopenshiftPricePremium * (1 - discount);
+                break;
+            case 'standard':
+                openshiftCost = cores * vopenshiftPriceStandard * (1 - discount);
+                break;
+            case 'ccsp':
+                openshiftCost = cores * vopenshiftPriceCCSP * (1 - discount);
+                break;
+        }
         
-        // マシン利用料の計算
         machineCost = cores * machinePrice;
     } else {
-        // ベアメタルの場合
-        // 必要なマシン数を計算（vCPU数とWorker数の大きい方で決定）
         const machines = Math.max(Math.ceil(vcpu / CORES_PER_MACHINE), workers);
         
-        // OpenShiftのコスト計算（Premiumか Standardかで単価が異なる）
-        openshiftCost = machines * (license === 'premium' ? bopenshiftPricePremium : bopenshiftPriceStandard) * (1 - discount);
+        switch(license) {
+            case 'premium':
+                openshiftCost = machines * bopenshiftPricePremium * (1 - discount);
+                break;
+            case 'standard':
+                openshiftCost = machines * bopenshiftPriceStandard * (1 - discount);
+                break;
+            case 'ccsp':
+                openshiftCost = machines * bopenshiftPriceCCSP * (1 - discount);
+                break;
+        }
         
-        // マシン利用料の計算（マシン数 * 1台あたりのコア数 * コア単価）
         machineCost = machines * CORES_PER_MACHINE * machinePrice;
     }
 
-    // 総コストの計算
     const totalCost = vsphereCost + openshiftCost + machineCost;
 
     return {
