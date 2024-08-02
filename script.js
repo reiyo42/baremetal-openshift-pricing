@@ -83,6 +83,12 @@ function createForm(index) {
     return div;
 }
 
+function changeNumber(id, delta) {
+    const input = document.getElementById(id);
+    const currentValue = parseInt(input.value) || 0;
+    input.value = Math.max(parseInt(input.min) || 0, currentValue + delta);
+}
+
 function setValuesFromQuery(urlParams) {
     for (const [key, value] of urlParams.entries()) {
         const element = document.getElementById(key);
