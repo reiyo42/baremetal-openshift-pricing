@@ -32,17 +32,35 @@ function createForm(index) {
         <h2>構成${index}</h2>
         <div class="form-group">
             <label for="workers${index}">冗長化のための最低必要Worker台数:</label>
-            <input type="number" id="workers${index}" min="1" value="3">
+            <div class="number-input-wrapper">
+                <input type="number" id="workers${index}" min="1" value="3">
+                <div class="number-input-buttons">
+                    <div class="number-input-button" onclick="changeNumber('workers${index}', 1)">+</div>
+                    <div class="number-input-button" onclick="changeNumber('workers${index}', -1)">-</div>
+                </div>
+            </div>
         </div>
         
         <div class="form-group">
             <label for="vcpu${index}">アプリのための最低必要vCPU数:</label>
-            <input type="number" id="vcpu${index}" min="1" value="16">
+            <div class="number-input-wrapper">
+                <input type="number" id="vcpu${index}" min="1" value="16">
+                <div class="number-input-buttons">
+                    <div class="number-input-button" onclick="changeNumber('vcpu${index}', 1)">+</div>
+                    <div class="number-input-button" onclick="changeNumber('vcpu${index}', -1)">-</div>
+                </div>
+            </div>
         </div>
         
         <div class="form-group">
             <label for="discount${index}">OpenShift単価の割引率 (%):</label>
-            <input type="number" id="discount${index}" min="0" max="100" value="0">
+            <div class="number-input-wrapper">
+                <input type="number" id="discount${index}" min="0" max="100" value="0">
+                <div class="number-input-buttons">
+                    <div class="number-input-button" onclick="changeNumber('discount${index}', 1)">+</div>
+                    <div class="number-input-button" onclick="changeNumber('discount${index}', -1)">-</div>
+                </div>
+            </div>
         </div>
         
         <div class="form-group">
