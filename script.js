@@ -1,4 +1,3 @@
-const CORES_PER_MACHINE = 64;
 let chart = null;
 
 function initializePage() {
@@ -109,9 +108,12 @@ function generateShareURL() {
     params.append('vsphere_price', document.getElementById('vsphere_price').value);
     params.append('vopenshift_price_premium', document.getElementById('vopenshift_price_premium').value);
     params.append('vopenshift_price_standard', document.getElementById('vopenshift_price_standard').value);
+    params.append('vopenshift_price_ccsp', document.getElementById('vopenshift_price_ccsp').value);
     params.append('bopenshift_price_premium', document.getElementById('bopenshift_price_premium').value);
     params.append('bopenshift_price_standard', document.getElementById('bopenshift_price_standard').value);
+    params.append('bopenshift_price_ccsp', document.getElementById('bopenshift_price_ccsp').value);
     params.append('machine_price', document.getElementById('machine_price').value);
+    params.append('machine_core_count', document.getElementById('machine_core_count').value);
 
     // 各構成の設定
     const count = parseInt(document.getElementById('comparison_count').value);
@@ -182,6 +184,7 @@ function calculateLicense(formNumber) {
     const discount = parseFloat(document.getElementById(`discount${formNumber}`).value) / 100;
     const config = document.getElementById(`config${formNumber}`).value;
     const license = document.getElementById(`license${formNumber}`).value;
+    const machineCoreCount = parseInt(document.getElementById('machine_core_count').value);
 
     let vsphereCost = 0;
     let openshiftCost = 0;
@@ -205,7 +208,7 @@ function calculateLicense(formNumber) {
         
         machineCost = cores * machinePrice;
     } else {
-        const machines = Math.max(Math.ceil(vcpu / CORES_PER_MACHINE), workers);
+        const machines = Math.max(Math.ceil(vcpu / machineCoreCount), workers);
         
         switch(license) {
             case 'premium':
@@ -219,7 +222,7 @@ function calculateLicense(formNumber) {
                 break;
         }
         
-        machineCost = machines * CORES_PER_MACHINE * machinePrice;
+        machineCost = machines * machineCoreCount * machinePrice;
     }
 
     const totalCost = vsphereCost + openshiftCost + machineCost;
