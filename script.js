@@ -83,12 +83,14 @@ function createForm(index) {
     return div;
 }
 
-function changeNumber(id, delta) {
+function changeNumber(id, delta, callback) {
     const input = document.getElementById(id);
     const currentValue = parseInt(input.value) || 0;
-    input.value = Math.max(parseInt(input.min) || 0, currentValue + delta);
+    input.value = Math.max(parseInt(input.min) || 0, Math.min(parseInt(input.max) || Infinity, currentValue + delta));
+    if (typeof callback === 'function') {
+        callback();
+    }
 }
-
 function setValuesFromQuery(urlParams) {
     for (const [key, value] of urlParams.entries()) {
         const element = document.getElementById(key);
@@ -254,7 +256,7 @@ function displayResults(results) {
             label: 'OpenShift',
             data: results.map(r => r.openshiftCost),
             backgroundColor: 'rgba(54, 162, 235, 0.8)',
-        },
+        }
     ];
 
     chart = new Chart(ctx, {
@@ -287,7 +289,27 @@ function displayResults(results) {
                     }
                 }
             }
-        }
+        },
+        plugins: [{
+            id: 'totalLabel',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                chart.data.datasets[0].data.forEach((_, i) => {
+                    const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[i], 0);
+                    const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+                    const x = meta.data[i].x;
+                    const y = meta.data[i].y;
+                    ctx.fillText(`合計: ${total.toLocaleString()}`, x, y - 5);
+                });
+                
+                ctx.restore();
+            }
+        }]
     });
 }
 
