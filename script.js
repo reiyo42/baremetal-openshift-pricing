@@ -1,4 +1,5 @@
 let chart = null;
+let chart2 = null;
 
 function initializePage() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -189,6 +190,7 @@ function calculateLicense(formNumber) {
     let vsphereCost = 0;
     let openshiftCost = 0;
     let machineCost = 0;
+    const machines = Math.max(Math.ceil(vcpu / machineCoreCount), workers);
 
     if (config === 'virtual') {
         const cores = vcpu;
@@ -208,8 +210,6 @@ function calculateLicense(formNumber) {
         
         machineCost = cores * machinePrice;
     } else {
-        const machines = Math.max(Math.ceil(vcpu / machineCoreCount), workers);
-        
         switch(license) {
             case 'premium':
                 openshiftCost = machines * bopenshiftPricePremium * (1 - discount);
@@ -233,7 +233,8 @@ function calculateLicense(formNumber) {
         machineCost,
         totalCost,
         config,
-        license
+        license,
+        machines
     };
 }
 
@@ -241,13 +242,25 @@ function displayResults(results) {
     if (chart) {
         chart.destroy();
     }
+    if (chart2) {
+        chart2.destroy();
+    }
 
     const ctx = document.getElementById('chart').getContext('2d');
-    const labels = results.map((_, index) => {
+    
+    const machineCoreCount = parseInt(document.getElementById('machine_core_count').value);
+    const labels = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
         const license = document.getElementById(`license${index + 1}`).value;
-        return `構成${index + 1}：${config} (${license})`;
+        const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
+        if (config === 'virtual') {
+            return [`構成${index + 1}：${config} (${license})`, `${vcpu} / ${vcpu} vCPU`];
+        } else {
+            const totalVcpu = r.machines * machineCoreCount;
+            return [`構成${index + 1}：${config} (${license})`, `${vcpu} / ${totalVcpu} vCPU`];
+        }
     });
+
     const datasets = [
         {
             label: 'マシン利用料',
@@ -285,7 +298,101 @@ function displayResults(results) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'OpenShift構成比較'
+                    text: '全体のコスト比較'
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, ti) => sum + ti.parsed.y, 0);
+                            return `合計: ${total.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        },
+        plugins: [{
+            id: 'totalLabel',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                chart.data.datasets[0].data.forEach((_, i) => {
+                    const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[i], 0);
+                    const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+                    const x = meta.data[i].x;
+                    const y = meta.data[i].y;
+                    ctx.fillText(`合計: ${total.toLocaleString()}`, x, y - 5);
+                });
+                
+                ctx.restore();
+            }
+        }]
+    });
+
+    // 2つ目のグラフ用データを準備
+    const vcpuShares = results.map((r, index) => {
+        const config = document.getElementById(`config${index + 1}`).value;
+        if (config === 'virtual') {
+            // 仮想ならそのまま
+            return 1;
+        } else {
+            // ベアメタルなら、vCPUのシェア率を計算に利用
+            const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
+            const totalVcpu = r.machines * machineCoreCount;
+            console.log(`構成${index + 1}：${vcpu} / ${totalVcpu} vCPU`)
+            return vcpu / totalVcpu
+        }
+    });
+    const vcpuCostData = results.map((r, index) => {
+        return {
+            machineCost: r.machineCost * vcpuShares[index],
+            vsphereCost: r.vsphereCost * vcpuShares[index],
+            openshiftCost: r.openshiftCost * vcpuShares[index]
+        };
+    });
+
+    const datasets2 = [
+        {
+            label: 'マシン利用料 (アプリのvCPUあたり)',
+            data: vcpuCostData.map(r => r.machineCost),
+            backgroundColor: 'rgba(75, 192, 192, 0.8)',
+        },
+        {
+            label: 'vSphere (アプリのvCPUあたり)',
+            data: vcpuCostData.map(r => r.vsphereCost),
+            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+        },
+        {
+            label: 'OpenShift (アプリのvCPUあたり)',
+            data: vcpuCostData.map(r => r.openshiftCost),
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+        }
+    ];
+
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    chart2 = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels, datasets: datasets2 },
+        options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'アプリのvCPUあたりのコスト'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'アプリのvCPUあたりのコスト比較'
                 },
                 tooltip: {
                     callbacks: {
@@ -319,6 +426,7 @@ function displayResults(results) {
         }]
     });
 }
+
 
 // ページ読み込み時に初期化
 window.onload = initializePage;
