@@ -243,7 +243,11 @@ function displayResults(results) {
     }
 
     const ctx = document.getElementById('chart').getContext('2d');
-    const labels = results.map((_, index) => `構成${index + 1}`);
+    const labels = results.map((_, index) => {
+        const config = document.getElementById(`config${index + 1}`).value;
+        const license = document.getElementById(`license${index + 1}`).value;
+        return `構成${index + 1}：${config} (${license})`;
+    });
     const datasets = [
         {
             label: 'マシン利用料',
