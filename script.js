@@ -329,45 +329,41 @@ function displayResults(results) {
                         if (value === 0) {
                             return '';
                         }
-                        // 3桁ごとにカンマを入れ、円表示にする
                         return '¥' + value.toLocaleString();
                     },
                     color: '#444',
                     font: {
                         weight: 'bold'
                     }
-                },
-                // カスタムテキストを描画するための設定
-                afterDraw: (chart) => {
-                    const ctx = chart.ctx;
-                    const chartArea = chart.chartArea;
-                    ctx.save();
-                    ctx.font = 'bold 16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = '#444';
-                
-                    // 合計金額を計算する
-                    const totalCost = chart.data.datasets.reduce((total, dataset) => {
-                        return total + dataset.data.reduce((sum, value) => sum + value, 0);
-                    }, 0);
-                
-                    // デバッグ用のログを追加
-                    console.log("Total Cost: ", totalCost);
-                    console.log("Chart Area: ", chartArea);
-                
-                    // グラフの上部に合計金額を描画
-                    if (chartArea.top && chartArea.left && chartArea.right) {
-                        ctx.fillText(
-                            `合計金額: ¥${totalCost.toLocaleString()}`, 
-                            (chartArea.left + chartArea.right) / 2,
-                            chartArea.top - 10 // グラフの上部少し上に表示
-                        );
-                    } else {
-                        console.log("Chart area is not properly defined.");
-                    }
-                    ctx.restore();
                 }
+            },
+            afterDraw: function(chart) {
+                console.log("afterDraw is called");
+            
+                const ctx = chart.ctx;
+                const datasets = chart.data.datasets;
+            
+                datasets.forEach(function(dataset, i) {
+                    const meta = chart.getDatasetMeta(i);
+                    const total = dataset.data.reduce((sum, value) => sum + value, 0);
+            
+                    console.log(`Chart ${i} Total: ${total}`);
+            
+                    meta.data.forEach(function(element, index) {
+                        const chartArea = chart.chartArea;
+            
+                        console.log("Chart Area:", chartArea);
+            
+                        ctx.save();
+                        ctx.font = 'bold 12px Arial';
+                        ctx.fillStyle = 'black';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`Total: ${total}`, (chartArea.left + chartArea.right) / 2, chartArea.top - 10);
+                        ctx.restore();
+                    });
+                });
             }
+            
         },
         plugins: [ChartDataLabels]
     });
