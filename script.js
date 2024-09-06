@@ -427,34 +427,36 @@ function displayResults(results) {
     });
 }
 
-function calculate() {
-    // 計算処理
-    const results = [
-        ["項目", "値"],
-        ["vSphereのvcpu単価", document.getElementById("vsphere_price").value],
-        ["仮想OpenShift PremiumのvCPU単価", document.getElementById("vopenshift_price_premium").value],
-        ["仮想OpenShift StandardのvCPU単価", document.getElementById("vopenshift_price_standard").value],
-        ["仮想OpenShift CCSPのvCPU単価", document.getElementById("vopenshift_price_ccsp").value],
-        ["ベアメタルOpenShift Premiumのマシン単価", document.getElementById("bopenshift_price_premium").value],
-        ["ベアメタルOpenShift Standardのマシン単価", document.getElementById("bopenshift_price_standard").value],
-        ["ベアメタルOpenShift CCSPのマシン単価", document.getElementById("bopenshift_price_ccsp").value],
-        ["マシンの利用料vCPU単価", document.getElementById("machine_price").value],
-        ["マシンあたりのvCPU数", document.getElementById("machine_core_count").value]
-    ];
+function extractChartData(chart) {
+    const data = chart.data;
+    let csvContent = "ラベル,データ\n";
     
-    // CSV形式に変換
-    let csvContent = results.map(e => e.join(",")).join("\n");
+    data.labels.forEach((label, index) => {
+        const dataPoints = data.datasets.map(dataset => dataset.data[index] || "N/A");
+        csvContent += [label, ...dataPoints].join(",") + "\n";
+    });
     
-    // テキストエリアに表示
-    document.getElementById("csvOutput").value = csvContent;
+    return csvContent;
 }
 
-function copyToClipboard() {
-    const csvOutput = document.getElementById("csvOutput");
+function copyChartData() {
+    // グラフオブジェクトを取得
+    const chart1 = Chart.getChart("chart"); // IDが"chart"のグラフを取得
+    const chart2 = Chart.getChart("chart2"); // IDが"chart2"のグラフを取得
+
+    // グラフデータをCSV形式に変換
+    const csvContent1 = extractChartData(chart1);
+    const csvContent2 = extractChartData(chart2);
+
+    // CSVコンテンツをテキストエリアに表示
+    document.getElementById("chartDataOutput").value = `グラフ1\n${csvContent1}\n\nグラフ2\n${csvContent2}`;
+
+    // テキストエリアの内容を選択してコピー
+    const csvOutput = document.getElementById("chartDataOutput");
     csvOutput.select();
     csvOutput.setSelectionRange(0, 99999); // モバイル対応
     document.execCommand("copy");
-    alert("結果をクリップボードにコピーしました");
+    alert("グラフデータをクリップボードにコピーしました");
 }
 
 
