@@ -335,37 +335,37 @@ function displayResults(results) {
                     font: {
                         weight: 'bold'
                     }
-                }
-            },
-            afterDraw: function(chart) {
-                console.log("afterDraw is called");
-            
-                const ctx = chart.ctx;
-                const datasets = chart.data.datasets;
-            
-                datasets.forEach(function(dataset, i) {
-                    const meta = chart.getDatasetMeta(i);
-                    const total = dataset.data.reduce((sum, value) => sum + value, 0);
-            
-                    console.log(`Chart ${i} Total: ${total}`);
-            
-                    meta.data.forEach(function(element, index) {
-                        const chartArea = chart.chartArea;
-            
-                        console.log("Chart Area:", chartArea);
-            
-                        ctx.save();
-                        ctx.font = 'bold 12px Arial';
-                        ctx.fillStyle = 'black';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(`Total: ${total}`, (chartArea.left + chartArea.right) / 2, chartArea.top - 10);
-                        ctx.restore();
+                },
+                // ここに afterDraw を追加
+                afterDraw: function(chart) {
+                    console.log("afterDraw is called");
+    
+                    const ctx = chart.ctx;
+                    const datasets = chart.data.datasets;
+    
+                    datasets.forEach(function(dataset, i) {
+                        const meta = chart.getDatasetMeta(i);
+                        const total = dataset.data.reduce((sum, value) => sum + value, 0);
+    
+                        console.log(`Chart ${i} Total: ${total}`);
+    
+                        meta.data.forEach(function(element, index) {
+                            const chartArea = chart.chartArea;
+    
+                            console.log("Chart Area:", chartArea);
+    
+                            ctx.save();
+                            ctx.font = 'bold 12px Arial';
+                            ctx.fillStyle = 'black';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(`Total: ${total}`, (chartArea.left + chartArea.right) / 2, chartArea.top - 10);
+                            ctx.restore();
+                        });
                     });
-                });
-                console.log("afterDraw is called at last");
+                    console.log("afterDraw is called at last");
+                }
             }
-            
-        },
+        }    
         //plugins: [ChartDataLabels]
     });
 
