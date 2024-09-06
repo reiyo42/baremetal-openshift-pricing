@@ -493,4 +493,7 @@ window.onload = function() {
 };
 
 // ページ読み込み時に初期化
-window.onload = initializePage;
+window.onload = function() {
+    initializePage();
+    initializeCharts(); // グラフの初期化も呼び出す
+};
