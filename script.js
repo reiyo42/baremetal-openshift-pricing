@@ -418,5 +418,79 @@ function copyChartData() {
     alert("グラフデータをクリップボードにコピーしました");
 }
 
+function initializeCharts() {
+    // グラフ1の初期化
+    const ctx1 = document.getElementById('chart').getContext('2d');
+    chart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Label1', 'Label2', 'Label3'],
+            datasets: [
+                {
+                    label: 'Dataset 1',
+                    data: [10, 0, 30], // データ例
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    display: true,
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: (value) => {
+                        return value !== 0 ? value : ''; // 値が0の場合は空文字を返す
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // グラフ2の初期化
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['Label1', 'Label2', 'Label3'],
+            datasets: [
+                {
+                    label: 'Dataset 2',
+                    data: [15, 0, 35], // データ例
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    display: true,
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: (value) => {
+                        return value !== 0 ? value : ''; // 値が0の場合は空文字を返す
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+// ページ読み込み時に初期化
+window.onload = function() {
+    initializePage();
+    initializeCharts(); // グラフの初期化も呼び出す
+};
+
 // ページ読み込み時に初期化
 window.onload = initializePage;
