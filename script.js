@@ -345,12 +345,20 @@ function displayResults(results) {
                     ctx.font = 'bold 16px Arial';
                     ctx.textAlign = 'center';
                     ctx.fillStyle = '#444';
+
+                    // 合計金額を計算する
+                    const totalCost = chart.data.datasets.reduce((total, dataset) => {
+                        return total + dataset.data.reduce((sum, value) => sum + value, 0);
+                    }, 0);
+
                     // グラフの上部に合計金額を描画
-                    ctx.fillText(
-                        `合計金額: ¥${totalCost.toLocaleString()}`, 
-                        (chartArea.left + chartArea.right) / 2,
-                        chartArea.top - 10 // グラフの上部少し上に表示
-                    );
+                    if (chartArea.top && chartArea.left && chartArea.right) {
+                        ctx.fillText(
+                            `合計金額: ¥${totalCost.toLocaleString()}`, 
+                            (chartArea.left + chartArea.right) / 2,
+                            chartArea.top - 10 // グラフの上部少し上に表示
+                        );
+                    }
                     ctx.restore();
                 }
             }
