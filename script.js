@@ -443,5 +443,142 @@ function copyChartData() {
     alert("グラフデータをクリップボードにコピーしました");
 }
 
+function initializeCharts() {
+    const ctx1 = document.getElementById('chart').getContext('2d');
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+
+    chart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Label1', 'Label2', 'Label3'],
+            datasets: [
+                {
+                    label: 'マシン利用料',
+                    data: [10, 0, 30],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                },
+                {
+                    label: 'vSphere',
+                    data: [0, 20, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                },
+                {
+                    label: 'OpenShift',
+                    data: [15, 0, 35],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'コスト'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: '全体のコスト比較'
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, ti) => sum + ti.parsed.y, 0);
+                            return `合計: ${total.toLocaleString()}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    display: true,
+                    formatter: (value, context) => {
+                        // 値が0の場合は空文字を返す
+                        return value === 0 ? '' : value;
+                    },
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    chart2 = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Label1', 'Label2', 'Label3'],
+            datasets: [
+                {
+                    label: 'マシン利用料 (アプリのvCPUあたり)',
+                    data: [10, 0, 30],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                },
+                {
+                    label: 'vSphere (アプリのvCPUあたり)',
+                    data: [0, 20, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                },
+                {
+                    label: 'OpenShift (アプリのvCPUあたり)',
+                    data: [15, 0, 35],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'アプリのvCPUあたりのコスト'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'アプリのvCPUあたりのコスト比較'
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, ti) => sum + ti.parsed.y, 0);
+                            return `合計: ${total.toLocaleString()}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    display: true,
+                    formatter: (value, context) => {
+                        // 値が0の場合は空文字を返す
+                        return value === 0 ? '' : value;
+                    },
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+
 // ページ読み込み時に初期化
-window.onload = initializePage;
+window.onload = function() {
+    initializePage();
+    initializeCharts(); // グラフの初期化も呼び出す
+};
