@@ -291,6 +291,29 @@ function displayResults(results) {
         }
     ];
 
+    const totalCostPlugin = {
+        id: 'totalCostPlugin',
+        afterDraw: function(chart) {
+            const ctx = chart.ctx;
+            const chartArea = chart.chartArea;
+            const datasets = chart.data.datasets;
+    
+            // 合計金額を計算
+            datasets.forEach(dataset => {
+                const total = dataset.data.reduce((sum, value) => sum + value, 0);
+                const yPosition = chartArea.top - 10; // 上部に表示
+    
+                // テキストの描画
+                ctx.save();
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Total: ¥${total.toLocaleString()}`, (chartArea.left + chartArea.right) / 2, yPosition);
+                ctx.restore();
+            });
+        }
+    };
+    
     chart = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets },
@@ -334,9 +357,11 @@ function displayResults(results) {
                     }
                 }
             },
-        },
-        plugins: [ChartDataLabels]
+            plugins: [ChartDataLabels],
+            plugins: [totalCostPlugin] // カスタムプラグインを登録
+        }
     });
+    
     
 
     // 2つ目のグラフ用データを準備
