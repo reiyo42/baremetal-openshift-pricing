@@ -1,2 +1,1 @@
 # baremetal-openshift-pricing
-ahaha
