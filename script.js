@@ -363,9 +363,9 @@ function displayResults(results) {
                         });
                     });
                 }
-            },
-            plugins: [ChartDataLabels]
-        }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
     
     
