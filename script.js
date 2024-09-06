@@ -430,15 +430,12 @@ function displayResults(results) {
 function extractChartData(chart) {
     const data = chart.data;
     let csvContent = "ラベル,データ\n";
-
-    console.log('Chart Data:', data); // デバッグ用ログ
-
+    
     data.labels.forEach((label, index) => {
         const dataPoints = data.datasets.map(dataset => dataset.data[index] || "N/A");
-        console.log('Data Points:', dataPoints); // デバッグ用ログ
         csvContent += [label, ...dataPoints].join(",") + "\n";
     });
-
+    
     return csvContent;
 }
 
