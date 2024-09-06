@@ -471,16 +471,14 @@ function initializeCharts() {
                     }
                 },
                 datalabels: {
-                    display: (context) => {
-                        // データセットの値が0の場合は非表示
-                        return context.dataset.data[context.dataIndex] !== 0;
+                    display: true,
+                    formatter: (value, context) => {
+                        // 値が0の場合は空文字を返す
+                        return value === 0 ? '' : value;
                     },
                     color: '#444',
                     font: {
                         weight: 'bold'
-                    },
-                    formatter: (value) => {
-                        return value;
                     }
                 }
             }
@@ -537,16 +535,14 @@ function initializeCharts() {
                     }
                 },
                 datalabels: {
-                    display: (context) => {
-                        // データセットの値が0の場合は非表示
-                        return context.dataset.data[context.dataIndex] !== 0;
+                    display: true,
+                    formatter: (value, context) => {
+                        // 値が0の場合は空文字を返す
+                        return value === 0 ? '' : value;
                     },
                     color: '#444',
                     font: {
                         weight: 'bold'
-                    },
-                    formatter: (value) => {
-                        return value;
                     }
                 }
             }
