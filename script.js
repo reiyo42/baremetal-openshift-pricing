@@ -326,7 +326,11 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        return value === 0 ? null : value.toLocaleString(); // カンマ区切りにする
+                        if (value === 0) {
+                            return '';
+                        }
+                        // 3桁ごとにカンマを入れ、円表示にする
+                        return '¥' + value.toLocaleString();
                     },
                     color: '#444',
                     font: {
@@ -425,7 +429,11 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        return value === 0 ? null : value.toLocaleString(); // カンマ区切りにする
+                        if (value === 0) {
+                            return '';
+                        }
+                        // 3桁ごとにカンマを入れ、円表示にする
+                        return '¥' + value.toLocaleString();
                     },
                     color: '#444',
                     font: {
