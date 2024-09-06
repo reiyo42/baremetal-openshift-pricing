@@ -91,6 +91,7 @@ function changeNumber(id, delta, callback) {
         callback();
     }
 }
+
 function setValuesFromQuery(urlParams) {
     for (const [key, value] of urlParams.entries()) {
         const element = document.getElementById(key);
@@ -167,7 +168,7 @@ function calculate() {
     for (let i = 1; i <= count; i++) {
         results.push(calculateLicense(i));
     }
-    
+
     displayResults(results);
 }
 
@@ -246,8 +247,9 @@ function displayResults(results) {
         chart2.destroy();
     }
 
-    const ctx = document.getElementById('chart').getContext('2d');
-    
+    const ctx1 = document.getElementById('chart').getContext('2d');
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+
     const machineCoreCount = parseInt(document.getElementById('machine_core_count').value);
     const labels = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
@@ -261,7 +263,7 @@ function displayResults(results) {
         }
     });
 
-    const datasets = [
+    const datasets1 = [
         {
             label: 'マシン利用料',
             data: results.map(r => r.machineCost),
@@ -279,9 +281,9 @@ function displayResults(results) {
         }
     ];
 
-    chart = new Chart(ctx, {
+    chart = new Chart(ctx1, {
         type: 'bar',
-        data: { labels, datasets },
+        data: { labels, datasets: datasets1 },
         options: {
             responsive: true,
             scales: {
@@ -310,40 +312,17 @@ function displayResults(results) {
                 }
             }
         },
-        plugins: [{
-            id: 'totalLabel',
-            afterDraw: (chart) => {
-                const ctx = chart.ctx;
-                ctx.save();
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-                
-                chart.data.datasets[0].data.forEach((_, i) => {
-                    const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[i], 0);
-                    const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
-                    const x = meta.data[i].x;
-                    const y = meta.data[i].y;
-                    ctx.fillText(`合計: ${total.toLocaleString()}`, x, y - 5);
-                });
-                
-                ctx.restore();
-            }
-        }]
+        plugins: [ChartDataLabels]
     });
 
-    // 2つ目のグラフ用データを準備
     const vcpuShares = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
         if (config === 'virtual') {
-            // 仮想ならそのまま
             return 1;
         } else {
-            // ベアメタルなら、vCPUのシェア率を計算に利用
             const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
             const totalVcpu = r.machines * machineCoreCount;
-            console.log(`構成${index + 1}：${vcpu} / ${totalVcpu} vCPU`)
-            return vcpu / totalVcpu
+            return vcpu / totalVcpu;
         }
     });
     const vcpuCostData = results.map((r, index) => {
@@ -372,7 +351,6 @@ function displayResults(results) {
         }
     ];
 
-    const ctx2 = document.getElementById('chart2').getContext('2d');
     chart2 = new Chart(ctx2, {
         type: 'bar',
         data: { labels, datasets: datasets2 },
@@ -404,26 +382,7 @@ function displayResults(results) {
                 }
             }
         },
-        plugins: [{
-            id: 'totalLabel',
-            afterDraw: (chart) => {
-                const ctx = chart.ctx;
-                ctx.save();
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-                
-                chart.data.datasets[0].data.forEach((_, i) => {
-                    const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[i], 0);
-                    const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
-                    const x = meta.data[i].x;
-                    const y = meta.data[i].y;
-                    ctx.fillText(`合計: ${total.toLocaleString()}`, x, y - 5);
-                });
-                
-                ctx.restore();
-            }
-        }]
+        plugins: [ChartDataLabels]
     });
 }
 
@@ -458,7 +417,6 @@ function copyChartData() {
     document.execCommand("copy");
     alert("グラフデータをクリップボードにコピーしました");
 }
-
 
 // ページ読み込み時に初期化
 window.onload = initializePage;
