@@ -247,9 +247,8 @@ function displayResults(results) {
         chart2.destroy();
     }
 
-    const ctx1 = document.getElementById('chart').getContext('2d');
-    const ctx2 = document.getElementById('chart2').getContext('2d');
-
+    const ctx = document.getElementById('chart').getContext('2d');
+    
     const machineCoreCount = parseInt(document.getElementById('machine_core_count').value);
     const labels = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
@@ -263,7 +262,7 @@ function displayResults(results) {
         }
     });
 
-    const datasets1 = [
+    const datasets = [
         {
             label: 'マシン利用料',
             data: results.map(r => r.machineCost),
@@ -281,9 +280,9 @@ function displayResults(results) {
         }
     ];
 
-    chart = new Chart(ctx1, {
+    chart = new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: datasets1 },
+        data: { labels, datasets },
         options: {
             responsive: true,
             scales: {
@@ -309,20 +308,34 @@ function displayResults(results) {
                             return `合計: ${total.toLocaleString()}`;
                         }
                     }
+                },
+                datalabels: {
+                    display: true,
+                    formatter: (value) => {
+                        return value === 0 ? null : value;
+                    },
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    }
                 }
             }
         },
         plugins: [ChartDataLabels]
     });
 
+    // 2つ目のグラフ用データを準備
     const vcpuShares = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
         if (config === 'virtual') {
+            // 仮想ならそのまま
             return 1;
         } else {
+            // ベアメタルなら、vCPUのシェア率を計算に利用
             const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
             const totalVcpu = r.machines * machineCoreCount;
-            return vcpu / totalVcpu;
+            console.log(`構成${index + 1}：${vcpu} / ${totalVcpu} vCPU`)
+            return vcpu / totalVcpu
         }
     });
     const vcpuCostData = results.map((r, index) => {
@@ -351,6 +364,7 @@ function displayResults(results) {
         }
     ];
 
+    const ctx2 = document.getElementById('chart2').getContext('2d');
     chart2 = new Chart(ctx2, {
         type: 'bar',
         data: { labels, datasets: datasets2 },
@@ -379,12 +393,23 @@ function displayResults(results) {
                             return `合計: ${total.toLocaleString()}`;
                         }
                     }
+                },
+                datalabels: {
+                    display: true,
+                    formatter: (value) => {
+                        return value === 0 ? null : value;
+                    },
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    }
                 }
             }
         },
         plugins: [ChartDataLabels]
     });
 }
+
 
 function extractChartData(chart) {
     const data = chart.data;
