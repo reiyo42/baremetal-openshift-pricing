@@ -419,32 +419,68 @@ function copyChartData() {
 }
 
 function initializeCharts() {
-    // グラフ1の初期化
     const ctx1 = document.getElementById('chart').getContext('2d');
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+
     chart = new Chart(ctx1, {
         type: 'bar',
         data: {
             labels: ['Label1', 'Label2', 'Label3'],
             datasets: [
                 {
-                    label: 'Dataset 1',
-                    data: [10, 0, 30], // データ例
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
+                    label: 'マシン利用料',
+                    data: [10, 0, 30],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                },
+                {
+                    label: 'vSphere',
+                    data: [0, 20, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                },
+                {
+                    label: 'OpenShift',
+                    data: [15, 0, 35],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
                 }
             ]
         },
         options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'コスト'
+                    }
+                }
+            },
             plugins: {
-                datalabels: {
+                title: {
                     display: true,
+                    text: '全体のコスト比較'
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, ti) => sum + ti.parsed.y, 0);
+                            return `合計: ${total.toLocaleString()}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    display: (context) => {
+                        // データセットの値が0の場合は非表示
+                        return context.dataset.data[context.dataIndex] !== 0;
+                    },
                     color: '#444',
                     font: {
                         weight: 'bold'
                     },
                     formatter: (value) => {
-                        return value !== 0 ? value : ''; // 値が0の場合は空文字を返す
+                        return value;
                     }
                 }
             }
@@ -452,32 +488,65 @@ function initializeCharts() {
         plugins: [ChartDataLabels]
     });
 
-    // グラフ2の初期化
-    const ctx2 = document.getElementById('chart2').getContext('2d');
     chart2 = new Chart(ctx2, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: ['Label1', 'Label2', 'Label3'],
             datasets: [
                 {
-                    label: 'Dataset 2',
-                    data: [15, 0, 35], // データ例
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderWidth: 1
+                    label: 'マシン利用料 (アプリのvCPUあたり)',
+                    data: [10, 0, 30],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                },
+                {
+                    label: 'vSphere (アプリのvCPUあたり)',
+                    data: [0, 20, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                },
+                {
+                    label: 'OpenShift (アプリのvCPUあたり)',
+                    data: [15, 0, 35],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
                 }
             ]
         },
         options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'アプリのvCPUあたりのコスト'
+                    }
+                }
+            },
             plugins: {
-                datalabels: {
+                title: {
                     display: true,
+                    text: 'アプリのvCPUあたりのコスト比較'
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, ti) => sum + ti.parsed.y, 0);
+                            return `合計: ${total.toLocaleString()}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    display: (context) => {
+                        // データセットの値が0の場合は非表示
+                        return context.dataset.data[context.dataIndex] !== 0;
+                    },
                     color: '#444',
                     font: {
                         weight: 'bold'
                     },
                     formatter: (value) => {
-                        return value !== 0 ? value : ''; // 値が0の場合は空文字を返す
+                        return value;
                     }
                 }
             }
@@ -486,11 +555,6 @@ function initializeCharts() {
     });
 }
 
-// ページ読み込み時に初期化
-window.onload = function() {
-    initializePage();
-    initializeCharts(); // グラフの初期化も呼び出す
-};
 
 // ページ読み込み時に初期化
 window.onload = function() {
