@@ -157,18 +157,20 @@ input, select {
     border-radius: 4px;
 }
 
+
 input[type="number"] {
     width: calc(100% - 30px); /* 幅を少し狭くして、ボタンのスペースを確保 */
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px 0 0 4px; /* 右側の角を四角に */
     font-size: 16px;
-    -moz-appearance: textfield;
+    appearance: textfield; /* 標準の appearance プロパティを追加 */
+    -moz-appearance: textfield; /* 古い Mozilla ブラウザのためのプロパティ */
 }
 
 input[type="number"]::-webkit-inner-spin-button, 
 input[type="number"]::-webkit-outer-spin-button { 
-    -webkit-appearance: none;
+    -webkit-appearance: none; /* 標準の appearance プロパティに合わせる */
     margin: 0;
 }
 
