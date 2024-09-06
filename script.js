@@ -1,5 +1,5 @@
 // ChartDataLabelsプラグインをインポートする（CDNを使っている場合、HTMLファイルで読み込むことも可能）
-const ChartDataLabels = window.ChartDataLabels;
+//const ChartDataLabels = window.ChartDataLabels;
 
 let chart = null;
 let chart2 = null;
@@ -362,10 +362,11 @@ function displayResults(results) {
                         ctx.restore();
                     });
                 });
+                console.log("afterDraw is called at last");
             }
             
         },
-        plugins: [ChartDataLabels]
+        //plugins: [ChartDataLabels]
     });
 
     // 2つ目のグラフ用データを準備
@@ -452,7 +453,7 @@ function displayResults(results) {
                 }
             }
         },
-        plugins: [ChartDataLabels]
+        //plugins: [ChartDataLabels]
     });
 }
 
