@@ -290,8 +290,7 @@ function displayResults(results) {
             backgroundColor: 'rgba(54, 162, 235, 0.8)',
         }
     ];
-
-    chart = new Chart(ctx, {
+        chart = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets },
         options: {
@@ -333,7 +332,7 @@ function displayResults(results) {
                         weight: 'bold'
                     }
                 }
-            },
+            }
         },
         plugins: [ChartDataLabels]
     });
