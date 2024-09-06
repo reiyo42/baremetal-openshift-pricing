@@ -150,6 +150,9 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         //alert('URLがクリップボードにコピーされました。');
         console.log('URLがクリップボードにコピーされました。');
+        closeSharePopup(); // コピー後にポップアップを閉じる
+    }).catch(err => {
+        console.error('コピーに失敗しました: ', err);
     });
 }
 
@@ -243,6 +246,10 @@ function calculateLicense(formNumber) {
     };
 }
 
+function calculateTotalCost(results) {
+    return results.reduce((total, result) => total + result.totalCost, 0);
+}
+
 function displayResults(results) {
     if (chart) {
         chart.destroy();
@@ -284,6 +291,9 @@ function displayResults(results) {
         }
     ];
 
+    // 合計金額を計算
+    const totalCost = calculateTotalCost(results);
+
     chart = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets },
@@ -316,16 +326,28 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        if (value === 0) {
-                            return '';
-                        }
-                        // 3桁ごとにカンマを入れ、円表示にする
-                        return '¥' + value.toLocaleString();
+                        return value === 0 ? null : value.toLocaleString(); // カンマ区切りにする
                     },
                     color: '#444',
                     font: {
                         weight: 'bold'
                     }
+                },
+                // カスタムテキストを描画するための設定
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const chartArea = chart.chartArea;
+                    ctx.save();
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#444';
+                    // グラフの上部に合計金額を描画
+                    ctx.fillText(
+                        `合計金額: ¥${totalCost.toLocaleString()}`, 
+                        (chartArea.left + chartArea.right) / 2,
+                        chartArea.top - 10 // グラフの上部少し上に表示
+                    );
+                    ctx.restore();
                 }
             }
         },
@@ -336,13 +358,12 @@ function displayResults(results) {
     const vcpuShares = results.map((r, index) => {
         const config = document.getElementById(`config${index + 1}`).value;
         if (config === 'virtual') {
-            // 仮想ならそのまま
             return 1;
         } else {
-            // ベアメタルなら、vCPUのシェア率を計算に利用
             const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
             const totalVcpu = r.machines * machineCoreCount;
-            return vcpu / totalVcpu;
+            console.log(`構成${index + 1}：${vcpu} / ${totalVcpu} vCPU`)
+            return vcpu / totalVcpu
         }
     });
     const vcpuCostData = results.map((r, index) => {
@@ -404,11 +425,7 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        if (value === 0) {
-                            return '';
-                        }
-                        // 3桁ごとにカンマを入れ、円表示にする
-                        return '¥' + value.toLocaleString();
+                        return value === 0 ? null : value.toLocaleString(); // カンマ区切りにする
                     },
                     color: '#444',
                     font: {
@@ -420,7 +437,6 @@ function displayResults(results) {
         plugins: [ChartDataLabels]
     });
 }
-
 
 function extractChartData(chart) {
     const data = chart.data;
