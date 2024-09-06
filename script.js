@@ -357,8 +357,8 @@ function displayResults(results) {
                     }
                 }
             },
-            plugins: [ChartDataLabels],
-            plugins: [totalCostPlugin] // カスタムプラグインを登録
+            plugins: [totalCostPlugin], // カスタムプラグインを登録
+            plugins: [ChartDataLabels]
         }
     });
     
