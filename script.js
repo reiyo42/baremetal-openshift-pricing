@@ -429,7 +429,7 @@ function displayResults(results) {
 
 function extractChartData(chart) {
     const data = chart.data;
-    let csvContent = "ラベル,データ\n";
+    let csvContent = "ラベル," + data.datasets.map(dataset => dataset.label).join(",") + "\n";
     
     data.labels.forEach((label, index) => {
         const dataPoints = data.datasets.map(dataset => dataset.data[index] || "N/A");
