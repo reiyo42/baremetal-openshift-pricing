@@ -148,7 +148,8 @@ function showSharePopup(url) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('URLがクリップボードにコピーされました。');
+        //alert('URLがクリップボードにコピーされました。');
+        console.log('URLがクリップボードにコピーされました。');
     });
 }
 
@@ -450,7 +451,8 @@ function copyChartData() {
     csvOutput.select();
     csvOutput.setSelectionRange(0, 99999); // モバイル対応
     document.execCommand("copy");
-    alert("グラフデータをクリップボードにコピーしました");
+    //alert("グラフデータをクリップボードにコピーしました。");
+    console.log('グラフデータをクリップボードにコピーしました。');
 }
 
 // ページ読み込み時に初期化
