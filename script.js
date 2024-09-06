@@ -1,3 +1,6 @@
+// ChartDataLabelsプラグインをインポートする（CDNを使っている場合、HTMLファイルで読み込むことも可能）
+const ChartDataLabels = window.ChartDataLabels;
+
 let chart = null;
 let chart2 = null;
 
@@ -312,7 +315,11 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        return value === 0 ? null : value;
+                        if (value === 0) {
+                            return '';
+                        }
+                        // 3桁ごとにカンマを入れ、円表示にする
+                        return '¥' + value.toLocaleString();
                     },
                     color: '#444',
                     font: {
@@ -334,8 +341,7 @@ function displayResults(results) {
             // ベアメタルなら、vCPUのシェア率を計算に利用
             const vcpu = parseInt(document.getElementById(`vcpu${index + 1}`).value);
             const totalVcpu = r.machines * machineCoreCount;
-            console.log(`構成${index + 1}：${vcpu} / ${totalVcpu} vCPU`)
-            return vcpu / totalVcpu
+            return vcpu / totalVcpu;
         }
     });
     const vcpuCostData = results.map((r, index) => {
@@ -397,7 +403,11 @@ function displayResults(results) {
                 datalabels: {
                     display: true,
                     formatter: (value) => {
-                        return value === 0 ? null : value;
+                        if (value === 0) {
+                            return '';
+                        }
+                        // 3桁ごとにカンマを入れ、円表示にする
+                        return '¥' + value.toLocaleString();
                     },
                     color: '#444',
                     font: {
